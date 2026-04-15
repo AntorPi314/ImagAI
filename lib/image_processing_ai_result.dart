@@ -37,7 +37,8 @@ class _ImageProcessingAiResultState extends State<ImageProcessingAiResult> {
       final prefs = await SharedPreferences.getInstance();
 
       final apiKey = prefs.getString("apiKey") ?? "";
-      final model = prefs.getString("model") ?? "grok-3-mini";
+      final model = prefs.getString("model") ?? "llama-3.3-70b-versatile";
+      final provider = prefs.getString("provider") ?? "groq";
       final systemPrompt = prefs.getString("systemPrompt") ?? "";
       final maxTokens = prefs.getInt("maxTokens") ?? 1000;
 
@@ -49,9 +50,8 @@ class _ImageProcessingAiResultState extends State<ImageProcessingAiResult> {
         return;
       }
 
-      // 📌 Feature-wise prompt
+      // Feature-wise prompt
       String prompt = "";
-
       switch (widget.title) {
         case "Math Problem Solver":
           prompt = "Solve this math problem step by step.";
@@ -75,19 +75,22 @@ class _ImageProcessingAiResultState extends State<ImageProcessingAiResult> {
       final bytes = await widget.imageFile.readAsBytes();
       final base64Image = base64Encode(bytes);
 
-      final response = await http.post(
-        Uri.parse("https://api.x.ai/v1/chat/completions"),
-        headers: {
+      // ── API endpoint নির্ধারণ করো provider অনুযায়ী ──
+      String apiUrl;
+      Map<String, String> headers;
+      Map<String, dynamic> body;
+
+      if (provider == "groq") {
+        // Groq OpenAI-compatible endpoint
+        apiUrl = "https://api.groq.com/openai/v1/chat/completions";
+        headers = {
           "Authorization": "Bearer $apiKey",
           "Content-Type": "application/json",
-        },
-        body: jsonEncode({
+        };
+        body = {
           "model": model,
           "messages": [
-            {
-              "role": "system",
-              "content": systemPrompt
-            },
+            {"role": "system", "content": systemPrompt},
             {
               "role": "user",
               "content": [
@@ -101,15 +104,60 @@ class _ImageProcessingAiResultState extends State<ImageProcessingAiResult> {
               ]
             }
           ],
-          "max_tokens": maxTokens
-        }),
+          "max_tokens": maxTokens,
+        };
+      } else if (provider == "grok") {
+        apiUrl = "https://api.x.ai/v1/chat/completions";
+        headers = {
+          "Authorization": "Bearer $apiKey",
+          "Content-Type": "application/json",
+        };
+        body = {
+          "model": model,
+          "messages": [
+            {"role": "system", "content": systemPrompt},
+            {
+              "role": "user",
+              "content": [
+                {"type": "text", "text": prompt},
+                {
+                  "type": "image_url",
+                  "image_url": {
+                    "url": "data:image/jpeg;base64,$base64Image"
+                  }
+                }
+              ]
+            }
+          ],
+          "max_tokens": maxTokens,
+        };
+      } else {
+        // অন্য provider এর জন্য fallback
+        setState(() {
+          _resultText = "❌ Provider টি এখনো support করা হয়নি।";
+          _isLoading = false;
+        });
+        return;
+      }
+
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: headers,
+        body: jsonEncode(body),
       );
 
       final data = jsonDecode(response.body);
 
+      if (response.statusCode != 200) {
+        setState(() {
+          _resultText = "❌ Error ${response.statusCode}: ${data['error']?['message'] ?? 'Unknown error'}";
+          _isLoading = false;
+        });
+        return;
+      }
+
       setState(() {
-        _resultText =
-            data["choices"]?[0]?["message"]?["content"] ?? "No response";
+        _resultText = data["choices"]?[0]?["message"]?["content"] ?? "No response";
         _isLoading = false;
       });
     } catch (e) {

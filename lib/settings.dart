@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 // ─── AI Provider Model ────────────────────────────────────────────────────────
 
 enum AIProvider {
+  groq('Groq', 'Groq'),
   grok('Grok', 'xAI'),
   gemini('Gemini', 'Google'),
   chatgpt('ChatGPT', 'OpenAI'),
@@ -13,7 +14,6 @@ enum AIProvider {
   mistral('Mistral', 'Mistral AI');
 
   const AIProvider(this.displayName, this.company);
-
   final String displayName;
   final String company;
 }
@@ -21,6 +21,14 @@ enum AIProvider {
 // ─── Model Lists per Provider ─────────────────────────────────────────────────
 
 const Map<AIProvider, List<String>> kModelOptions = {
+  AIProvider.groq: [
+    'meta-llama/llama-4-scout-17b-16e-instruct',
+    'meta-llama/llama-4-maverick-17b-128e-instruct',
+    'llama-3.3-70b-versatile',
+    'llama-3.1-8b-instant',
+    'gemma2-9b-it',
+    'mixtral-8x7b-32768',
+  ],
   AIProvider.grok: ['grok-3', 'grok-3-mini', 'grok-2', 'grok-2-mini', 'grok-beta'],
   AIProvider.gemini: [
     'gemini-2.5-pro',
@@ -42,7 +50,6 @@ const Map<AIProvider, List<String>> kModelOptions = {
 };
 
 // ─── Settings Data Class ──────────────────────────────────────────────────────
-
 class AppSettings {
   AIProvider selectedProvider;
   String apiKey;
@@ -53,9 +60,9 @@ class AppSettings {
   String systemPrompt;
 
   AppSettings({
-    this.selectedProvider = AIProvider.grok,
+    this.selectedProvider = AIProvider.groq,
     this.apiKey = '',
-    this.selectedModel = 'grok-3-mini',
+    this.selectedModel = 'meta-llama/llama-4-scout-17b-16e-instruct',
     this.temperatureMin = 0.0,
     this.temperatureMax = 1.0,
     this.maxOutputTokens = 1000,
