@@ -97,6 +97,45 @@ class _SettingsPageState extends State<SettingsPage> {
   static const Color kBlue = Color(0xFF68ABE9);
 
   @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      // Load API Key
+      _settings.apiKey = prefs.getString("apiKey") ?? "";
+      _apiKeyController.text = _settings.apiKey;
+
+      // Load System Prompt
+      _settings.systemPrompt = prefs.getString("systemPrompt") ?? "";
+      _systemPromptController.text = _settings.systemPrompt;
+
+      // Load Max Tokens
+      _settings.maxOutputTokens = prefs.getInt("maxTokens") ?? 1000;
+      _maxTokensController.text = _settings.maxOutputTokens.toString();
+
+      // Load Provider
+      String savedProviderName = prefs.getString("provider") ?? AIProvider.groq.name;
+      _settings.selectedProvider = AIProvider.values.firstWhere(
+            (p) => p.name == savedProviderName,
+        orElse: () => AIProvider.groq,
+      );
+
+      // Load Model
+      String savedModel = prefs.getString("model") ?? kModelOptions[_settings.selectedProvider]!.first;
+      if (kModelOptions[_settings.selectedProvider]!.contains(savedModel)) {
+        _settings.selectedModel = savedModel;
+      } else {
+        _settings.selectedModel = kModelOptions[_settings.selectedProvider]!.first;
+      }
+    });
+  }
+
+  @override
   void dispose() {
     _apiKeyController.dispose();
     _systemPromptController.dispose();
