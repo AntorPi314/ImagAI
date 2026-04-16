@@ -27,7 +27,7 @@ class LocalDbService {
           : availableModels.first,
       temperatureMin: prefs.getDouble('temperatureMin') ?? 0.0,
       temperatureMax: prefs.getDouble('temperatureMax') ?? 1.0,
-      maxOutputTokens: prefs.getInt('maxTokens') ?? 1000,
+      maxOutputTokens: prefs.getInt('maxTokens') ?? 8192,
       systemPrompt: prefs.getString('systemPrompt') ?? '',
     );
   }
