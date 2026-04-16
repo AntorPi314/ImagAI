@@ -126,17 +126,17 @@ class HomeController {
   String promptForTitle(String title) {
     switch (title) {
       case 'Math Problem Solver':
-        return 'Solve this math problem step by step.';
+        return 'Solve this math problem step by step in detail. Show every calculation, explain the logic behind each step clearly, and provide the final answer at the end. Use markdown formatting with headings for each step.';
       case 'Medical Report Summarize':
-        return 'Summarize this medical report simply.';
+        return 'Summarize this medical report in detail. Break it down into sections: Patient Information, Key Findings, Diagnosis, Medications/Treatments mentioned, and Recommendations. Use bullet points and make it easy to understand for a non-medical person. Provide the full complete summary without cutting short.';
       case 'Skin Issue Detection':
-        return 'Analyze the visible skin condition.';
+        return 'You are a skin analysis AI assistant. Analyze the visible skin condition in this image thoroughly. You MUST provide your full prediction and analysis first — do NOT refuse or redirect to a doctor without analyzing. Follow this structure:\n\n1. **Identified Condition**: State what skin condition you predict this is.\n2. **Confidence Level**: How confident you are in this prediction.\n3. **Symptoms Observed**: List visible symptoms you can identify from the image.\n4. **Possible Causes**: What commonly causes this condition.\n5. **Severity Assessment**: Mild, Moderate, or Severe based on what you see.\n6. **Home Care Suggestions**: What the person can do at home to help.\n7. **⚕️ Professional Advice**: At the very end, recommend consulting a dermatologist for proper diagnosis and treatment.\n\nProvide all information completely. Do not cut the response short.';
       case 'Image to Text':
-        return 'Extract all visible text from the image.';
+        return 'Extract ALL visible text from this image. Maintain the original formatting, line breaks, and structure as closely as possible. If there are multiple text sections, separate them clearly. Include every piece of text you can read, no matter how small.';
       case 'Plant & Disease Identifier':
-        return 'Identify the plant and detect any visible disease.';
+        return 'Identify the plant in this image and detect any visible diseases or health issues. Provide:\n1. **Plant Name** (common and scientific)\n2. **Plant Family**\n3. **Health Status**: Healthy or Diseased\n4. **Disease Identified** (if any): Name of disease, symptoms visible, possible causes\n5. **Treatment/Care Tips**: How to treat the disease or maintain the plant\n6. Provide complete detailed information.';
       default:
-        return 'Analyze this image.';
+        return 'Analyze this image thoroughly and provide a complete, detailed response. Use markdown formatting with headings and bullet points.';
     }
   }
 }

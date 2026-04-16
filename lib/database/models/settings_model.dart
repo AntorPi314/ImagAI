@@ -15,7 +15,7 @@ class SettingsModel {
     this.selectedModel = ApiConstants.defaultGeminiModel,
     this.temperatureMin = 0.0,
     this.temperatureMax = 1.0,
-    this.maxOutputTokens = 1000,
+    this.maxOutputTokens = 8192,
     this.systemPrompt = '',
   });
 
