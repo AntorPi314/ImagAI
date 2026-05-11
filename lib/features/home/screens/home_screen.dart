@@ -13,6 +13,7 @@ import '../controllers/home_controller.dart';
 import '../widgets/history_list_item.dart';
 import '../widgets/tool_grid_item.dart';
 import '../../../features/compression/screens/image_compression_screen.dart';
+import '../../../features/compression/screens/video_compression_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -130,6 +131,11 @@ class _HomeScreenState extends State<HomeScreen> {
     return;
   }
 
+  if (feature.title == 'Video Compression') {
+    _pickVideoForCompression(context);
+    return;
+  }
+
   if (!feature.requiresImage) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('${feature.title} feature coming soon!')),
@@ -148,6 +154,18 @@ Future<void> _pickImageForCompression(BuildContext context) async {
     context,
     AppRouter.imageCompression,
     arguments: ImageCompressionArgs(imageFile: imageFile),
+  );
+}
+
+Future<void> _pickVideoForCompression(BuildContext context) async {
+  final picker = ImagePicker();
+  final XFile? videoFile = await picker.pickVideo(source: ImageSource.gallery);
+  if (videoFile == null || !context.mounted) return;
+
+  await Navigator.pushNamed(
+    context,
+    AppRouter.videoCompression,
+    arguments: videoFile.path,
   );
 }
 
