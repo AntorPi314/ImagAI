@@ -8,6 +8,7 @@ plugins {
 android {
     namespace = "com.antor.imagai.imag_ai"
     compileSdk = flutter.compileSdkVersion
+    ndkVersion = "28.2.13676358"
 //    ndkVersion = flutter.ndkVersion
 
     compileOptions {

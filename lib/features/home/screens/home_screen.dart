@@ -12,6 +12,7 @@ import '../../../database/models/history_model.dart';
 import '../controllers/home_controller.dart';
 import '../widgets/history_list_item.dart';
 import '../widgets/tool_grid_item.dart';
+import '../../../features/compression/screens/image_compression_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -124,15 +125,31 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _onFeatureTap(BuildContext context, FeatureItem feature) async {
-    if (!feature.requiresImage) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${feature.title} feature coming soon!')),
-      );
-      return;
-    }
-
-    _showImageSourceDialog(context, feature);
+  if (feature.title == 'Image Compression') {
+    _pickImageForCompression(context);
+    return;
   }
+
+  if (!feature.requiresImage) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('${feature.title} feature coming soon!')),
+    );
+    return;
+  }
+
+  _showImageSourceDialog(context, feature);
+}
+
+Future<void> _pickImageForCompression(BuildContext context) async {
+  final File? imageFile = await ImagePickerUtil.pickImage(ImageSource.gallery);
+  if (imageFile == null || !context.mounted) return;
+
+  await Navigator.pushNamed(
+    context,
+    AppRouter.imageCompression,
+    arguments: ImageCompressionArgs(imageFile: imageFile),
+  );
+}
 
   void _showImageSourceDialog(BuildContext context, FeatureItem feature) {
     showModalBottomSheet<void>(

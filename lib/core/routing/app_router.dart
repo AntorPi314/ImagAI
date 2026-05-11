@@ -6,6 +6,8 @@ import '../../features/ai_tools/screens/image_to_text_screen.dart';
 import '../../features/home/screens/home_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
 
+import '../../features/compression/screens/image_compression_screen.dart';
+
 class AiToolRouteArgs {
   const AiToolRouteArgs({
     required this.title,
@@ -25,17 +27,29 @@ class AppRouter {
   static const String settings = '/settings';
   static const String aiToolResult = '/ai-tool-result';
 
+  static const String imageCompression = '/image-compression';
+
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
       case home:
         return MaterialPageRoute(builder: (_) => const HomeScreen());
+
       case AppRouter.settings:
         return MaterialPageRoute(builder: (_) => const SettingsScreen());
+
       case aiToolResult:
         final args = settings.arguments as AiToolRouteArgs;
         return MaterialPageRoute(
           builder: (_) => AiToolResultScreen(args: args),
         );
+
+      // 👇 এখানে নতুন case add করবা
+      case imageCompression:
+        final args = settings.arguments as ImageCompressionArgs;
+        return MaterialPageRoute(
+          builder: (_) => ImageCompressionScreen(args: args),
+        );
+
       default:
         return MaterialPageRoute(builder: (_) => const HomeScreen());
     }
