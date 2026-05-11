@@ -7,6 +7,7 @@ import '../../features/home/screens/home_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
 
 import '../../features/compression/screens/image_compression_screen.dart';
+import '../../features/compression/screens/video_compression_screen.dart';
 
 class AiToolRouteArgs {
   const AiToolRouteArgs({
@@ -28,6 +29,7 @@ class AppRouter {
   static const String aiToolResult = '/ai-tool-result';
 
   static const String imageCompression = '/image-compression';
+  static const String videoCompression = '/video-compression';
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -43,11 +45,16 @@ class AppRouter {
           builder: (_) => AiToolResultScreen(args: args),
         );
 
-      // 👇 এখানে নতুন case add করবা
       case imageCompression:
         final args = settings.arguments as ImageCompressionArgs;
         return MaterialPageRoute(
           builder: (_) => ImageCompressionScreen(args: args),
+        );
+
+      case videoCompression:
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const VideoCompressionScreen(),
         );
 
       default:
