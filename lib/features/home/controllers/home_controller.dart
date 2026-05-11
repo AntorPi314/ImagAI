@@ -8,12 +8,14 @@ class FeatureItem {
   final String iconPath;
   final LinearGradient gradient;
   final bool requiresImage;
+  final bool isPdfTool;
 
   const FeatureItem({
     required this.title,
     required this.iconPath,
     required this.gradient,
     this.requiresImage = false,
+    this.isPdfTool = false,
   });
 }
 
@@ -70,6 +72,7 @@ class HomeController {
       FeatureItem(
         title: 'AI PDF Viewer',
         iconPath: 'assets/svg/pdf.svg',
+        isPdfTool: true,
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
@@ -130,7 +133,7 @@ class HomeController {
       case 'Medical Report Summarize':
         return 'Summarize this medical report in detail. Break it down into sections: Patient Information, Key Findings, Diagnosis, Medications/Treatments mentioned, and Recommendations. Use bullet points and make it easy to understand for a non-medical person. Provide the full complete summary without cutting short.';
       case 'Skin Issue Detection':
-        return 'You are a skin analysis AI assistant. Analyze the visible skin condition in this image thoroughly. You MUST provide your full prediction and analysis first — do NOT refuse or redirect to a doctor without analyzing. Follow this structure:\n\n1. **Identified Condition**: State what skin condition you predict this is.\n2. **Confidence Level**: How confident you are in this prediction.\n3. **Symptoms Observed**: List visible symptoms you can identify from the image.\n4. **Possible Causes**: What commonly causes this condition.\n5. **Severity Assessment**: Mild, Moderate, or Severe based on what you see.\n6. **Home Care Suggestions**: What the person can do at home to help.\n7. **⚕️ Professional Advice**: At the very end, recommend consulting a dermatologist for proper diagnosis and treatment.\n\nProvide all information completely. Do not cut the response short.';
+        return 'You are a skin analysis AI assistant. Analyze the visible skin condition in this image thoroughly. You MUST provide your full prediction and analysis first — do NOT refuse or redirect to a doctor without analyzing. Follow this structure:\n\n1. **Identified Condition**: State what skin condition you predict this is.\n2. **Confidence Level**: How confident you are in this prediction.\n3. **Symptoms Observed**: List visible symptoms you can identify from the image.\n4. **Possible Observed**: What commonly causes this condition.\n5. **Severity Assessment**: Mild, Moderate, or Severe based on what you see.\n6. **Home Care Suggestions**: What the person can do at home to help.\n7. **⚕️ Professional Advice**: At the very end, recommend consulting a dermatologist for proper diagnosis and treatment.\n\nProvide all information completely. Do not cut the response short.';
       case 'Image to Text':
         return 'Extract ALL visible text from this image. Maintain the original formatting, line breaks, and structure as closely as possible. If there are multiple text sections, separate them clearly. Include every piece of text you can read, no matter how small.';
       case 'Plant & Disease Identifier':

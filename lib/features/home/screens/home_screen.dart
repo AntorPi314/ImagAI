@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
@@ -125,7 +126,26 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Future<void> _onFeatureTap(BuildContext context, FeatureItem feature) async {
+Future<void> _onFeatureTap(BuildContext context, FeatureItem feature) async {
+  // ── NEW: PDF Viewer ────────────────────────────────────────────────────
+  if (feature.isPdfTool) {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+      allowMultiple: false,
+    );
+    if (result == null || result.files.isEmpty) return;
+    final path = result.files.single.path;
+    if (path == null || !context.mounted) return;
+    await Navigator.pushNamed(
+      context,
+      AppRouter.pdfViewer,
+      arguments: File(path),
+    );
+    return;
+  }
+  // ── END NEW ────────────────────────────────────────────────────────────
+
   if (feature.title == 'Image Compression') {
     _pickImageForCompression(context);
     return;
