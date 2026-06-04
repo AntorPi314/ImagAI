@@ -33,13 +33,19 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadHistory();
   }
 
-  Future<void> _loadHistory() async {
-    final history = await _controller.getHistory();
-    if (!mounted) {
-      return;
-    }
+Future<void> _loadHistory() async {
+  try {
+    final history = await _controller.getHistory().timeout(
+      const Duration(seconds: 6),
+      onTimeout: () => [],
+    );
+    if (!mounted) return;
     setState(() => _history = history);
+  } catch (_) {
+    if (!mounted) return;
+    setState(() => _history = []);
   }
+}
 
   @override
   Widget build(BuildContext context) {

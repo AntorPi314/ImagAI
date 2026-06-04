@@ -32,17 +32,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _load();
   }
 
-  Future<void> _load() async {
+Future<void> _load() async {
+  try {
     final settings = await _controller.loadSettings();
+    if (!mounted) return;
     _apiKeyController.text = settings.apiKey;
     _systemPromptController.text = settings.systemPrompt;
     _maxTokensController.text = settings.maxOutputTokens.toString();
-
     setState(() {
       _settings = settings;
       _isLoading = false;
     });
+  } catch (_) {
+    if (!mounted) return;
+    setState(() => _isLoading = false); // error হলেও spinner বন্ধ হবে
   }
+}
 
   @override
   void dispose() {

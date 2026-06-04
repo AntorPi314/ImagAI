@@ -29,17 +29,20 @@ class _PdfViewerScreenState extends State<PdfViewerScreen>
 
   late final AnimationController _aiSpinController;
 
-  @override
+@override
   void initState() {
     super.initState();
     _aiSpinController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 900),
     );
-
-    _pdfController = PdfControllerPinch(
-      document: PdfDocument.openFile(widget.pdfFile.path),
-    );
+    try {
+      _pdfController = PdfControllerPinch(
+        document: PdfDocument.openFile(widget.pdfFile.path),
+      );
+    } catch (_) {
+      // PDF load error handled by errorBuilder in PdfViewPinch
+    }
   }
 
   @override
