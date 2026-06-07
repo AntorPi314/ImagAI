@@ -1,12 +1,12 @@
 plugins {
     id("com.android.application")
     id("kotlin-android")
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+    id("com.google.gms.google-services")
 }
 
 android {
-    namespace = "com.antor.imagai.imag_ai"
+    namespace = "com.antor.imagai"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "28.2.13676358"
 //    ndkVersion = flutter.ndkVersion
@@ -23,7 +23,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.antor.imagai.imag_ai"
+        applicationId = "com.antor.imagai"
         minSdk = 26
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

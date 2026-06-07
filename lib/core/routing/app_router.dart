@@ -8,6 +8,7 @@ import '../../features/settings/screens/settings_screen.dart';
 import '../../features/compression/screens/image_compression_screen.dart';
 import '../../features/compression/screens/video_compression_screen.dart';
 import '../../features/pdf_viewer/screens/pdf_viewer_screen.dart';
+import '../../features/global_chat/screens/global_chat_screen.dart';
 
 class AiToolRouteArgs {
   const AiToolRouteArgs({
@@ -29,7 +30,8 @@ class AppRouter {
   static const String aiToolResult = '/ai-tool-result';
   static const String imageCompression = '/image-compression';
   static const String videoCompression = '/video-compression';
-  static const String pdfViewer = '/pdf-viewer'; // ← NEW
+  static const String pdfViewer = '/pdf-viewer';
+  static const String globalChat = '/global-chat'; // ← এটা missing ছিল
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -57,12 +59,14 @@ class AppRouter {
           builder: (_) => const VideoCompressionScreen(),
         );
 
-      // ── PDF Viewer route ──────────────────────────────────────────────────
       case pdfViewer:
         final pdfFile = settings.arguments as File;
         return MaterialPageRoute(
           builder: (_) => PdfViewerScreen(pdfFile: pdfFile),
         );
+
+      case globalChat:
+        return MaterialPageRoute(builder: (_) => const ChatEntry());
 
       default:
         return MaterialPageRoute(builder: (_) => const HomeScreen());

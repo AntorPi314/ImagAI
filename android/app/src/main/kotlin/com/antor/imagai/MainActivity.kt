@@ -1,4 +1,4 @@
-package com.antor.imagai.imag_ai
+package com.antor.imagai
 
 import android.content.Intent
 import android.net.Uri

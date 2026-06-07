@@ -279,6 +279,7 @@ Future<void> _pickVideoForCompression(BuildContext context) async {
   }
 }
 
+
 class _HeaderSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -297,6 +298,23 @@ class _HeaderSection extends StatelessWidget {
           ),
           Row(
             children: [
+              GestureDetector(
+                onTap: () => Navigator.pushNamed(context, AppRouter.globalChat),
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.forum_rounded,
+                    color: Colors.white,
+                    size: 22,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
               GestureDetector(
                 onTap: () => Navigator.pushNamed(context, AppRouter.settings),
                 child: SvgPicture.asset(
@@ -317,3 +335,4 @@ class _HeaderSection extends StatelessWidget {
     );
   }
 }
+

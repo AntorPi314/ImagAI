@@ -7,3 +7,16 @@ flutter clean && flutter pub get
 
 
   flutter build apk --release --split-per-abi --target-platform android-arm64
+
+
+
+
+
+
+
+
+
+  flutter pub run pdfx:install_web
+  flutter run
+
+
