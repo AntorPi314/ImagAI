@@ -75,7 +75,7 @@ class _PdfViewerScreenState extends State<PdfViewerScreen>
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('⚠️ Settings-এ আগে API Key দিন।'),
+              content: const Text('Please add your API Key in Settings first.'),
               backgroundColor: AppColors.purple.withValues(alpha: 0.9),
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
@@ -197,7 +197,7 @@ class _PdfViewerScreenState extends State<PdfViewerScreen>
                                 color: Colors.redAccent, size: 48),
                             const SizedBox(height: 12),
                             Text(
-                              'PDF load করা যাচ্ছে না।\n$error',
+                              'Unable to load PDF.\n$error',
                               textAlign: TextAlign.center,
                               style: const TextStyle(
                                   color: Colors.white60, fontSize: 13),

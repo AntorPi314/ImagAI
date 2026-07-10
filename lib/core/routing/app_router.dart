@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
@@ -14,13 +15,17 @@ class AiToolRouteArgs {
   const AiToolRouteArgs({
     required this.title,
     this.prompt,
-    required this.imageFile,
+    required this.imageBytes,
+    this.imageName = 'image.jpg',
     this.resultText,
   });
 
   final String title;
   final String? prompt;
-  final File imageFile;
+
+  /// Raw image bytes — works on Web, Android, iOS, and Desktop.
+  final Uint8List imageBytes;
+  final String imageName;
   final String? resultText;
 }
 
@@ -31,7 +36,7 @@ class AppRouter {
   static const String imageCompression = '/image-compression';
   static const String videoCompression = '/video-compression';
   static const String pdfViewer = '/pdf-viewer';
-  static const String globalChat = '/global-chat'; // ← এটা missing ছিল
+  static const String globalChat = '/global-chat'; //  this was missing
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {

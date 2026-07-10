@@ -45,7 +45,7 @@ Future<void> _load() async {
     });
   } catch (_) {
     if (!mounted) return;
-    setState(() => _isLoading = false); // error হলেও spinner বন্ধ হবে
+    setState(() => _isLoading = false); // spinner stops even on error
   }
 }
 
@@ -68,7 +68,7 @@ Future<void> _load() async {
 
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(const SnackBar(content: Text('Settings Saved ✅')));
+    ).showSnackBar(const SnackBar(content: Text('Settings Saved ')));
   }
 
   @override

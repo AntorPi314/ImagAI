@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 
@@ -9,11 +9,10 @@ import 'ai_base_service.dart';
 class DeepseekService implements AiBaseService {
   @override
   Future<String> analyzeImage({
-    required File imageFile,
+    required Uint8List imageBytes,
     required String prompt,
     required SettingsModel settings,
   }) async {
-    final bytes = await imageFile.readAsBytes();
     final response = await http.post(
       Uri.parse('https://api.deepseek.com/chat/completions'),
       headers: {
@@ -32,7 +31,7 @@ class DeepseekService implements AiBaseService {
               {
                 'type': 'image_url',
                 'image_url': {
-                  'url': 'data:image/jpeg;base64,${base64Encode(bytes)}',
+                  'url': 'data:image/jpeg;base64,${base64Encode(imageBytes)}',
                 },
               },
             ],

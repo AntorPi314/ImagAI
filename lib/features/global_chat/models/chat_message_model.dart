@@ -7,6 +7,7 @@ class ChatMessageModel {
   final String initials;
   final String text;
   final Timestamp? timestamp;
+  final List<String> reportedBy; 
 
   const ChatMessageModel({
     required this.id,
@@ -15,6 +16,7 @@ class ChatMessageModel {
     required this.initials,
     required this.text,
     this.timestamp,
+    this.reportedBy = const [],
   });
 
   factory ChatMessageModel.fromDoc(DocumentSnapshot doc) {
@@ -26,6 +28,7 @@ class ChatMessageModel {
       initials: data['initials'] ?? '?',
       text: data['text'] ?? '',
       timestamp: data['timestamp'] as Timestamp?,
+      reportedBy: List<String>.from(data['reportedBy'] ?? []), // 
     );
   }
 }

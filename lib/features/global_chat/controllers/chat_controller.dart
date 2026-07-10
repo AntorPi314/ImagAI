@@ -42,12 +42,79 @@ class ChatController {
     return result.user;
   }
 
+  /// Sign up a brand-new user with email/password + display name.
+  /// Throws [FirebaseAuthException] on failure — caller should catch it
+  /// and use [authErrorMessage] to show a friendly message.
+  Future<User?> signUpWithEmail({
+    required String name,
+    required String email,
+    required String password,
+  }) async {
+    final result = await _auth.createUserWithEmailAndPassword(
+      email: email.trim(),
+      password: password,
+    );
+    final user = result.user;
+    if (user != null && name.trim().isNotEmpty) {
+      await user.updateDisplayName(name.trim());
+      await user.reload();
+    }
+    return _auth.currentUser;
+  }
+
+  /// Sign in an existing user with email/password.
+  /// Throws [FirebaseAuthException] on failure.
+  Future<User?> signInWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    final result = await _auth.signInWithEmailAndPassword(
+      email: email.trim(),
+      password: password,
+    );
+    return result.user;
+  }
+
+  /// Sends a password-reset email. Throws [FirebaseAuthException] on failure.
+  Future<void> sendPasswordResetEmail(String email) async {
+    await _auth.sendPasswordResetEmail(email: email.trim());
+  }
+
+  /// Maps common [FirebaseAuthException] codes to friendly English
+  /// messages for display in the UI.
+  String authErrorMessage(Object error) {
+    if (error is FirebaseAuthException) {
+      switch (error.code) {
+        case 'email-already-in-use':
+          return 'An account already exists with this email. Please login.';
+        case 'invalid-email':
+          return 'Please enter a valid email address.';
+        case 'weak-password':
+          return 'Password is too weak. Use at least 6 characters.';
+        case 'user-not-found':
+          return 'No account found with this email. Please sign up.';
+        case 'wrong-password':
+        case 'invalid-credential':
+          return 'Incorrect email or password.';
+        case 'user-disabled':
+          return 'This account has been disabled.';
+        case 'too-many-requests':
+          return 'Too many attempts. Please try again later.';
+        case 'network-request-failed':
+          return 'Please check your internet connection.';
+        default:
+          return error.message ?? 'Something went wrong. Please try again.';
+      }
+    }
+    return error.toString();
+  }
+
   /// Returns error string if rate limited, null if ok
   String? checkRateLimit() {
     final now = DateTime.now();
     _sentTimes.removeWhere((t) => now.difference(t).inSeconds >= 60);
     if (_sentTimes.length >= _maxPerMinute) {
-      return 'প্রতি মিনিটে সর্বোচ্চ $_maxPerMinute টি message পাঠানো যাবে।';
+      return 'You can send a maximum of $_maxPerMinute messages per minute.';
     }
     return null;
   }
@@ -59,7 +126,7 @@ class ChatController {
     // Word limit check (200 words)
     final wordCount = text.trim().split(RegExp(r'\s+')).length;
     if (wordCount > 200) {
-      return '200 word এর বেশি message পাঠানো যাবে না। (বর্তমান: $wordCount)';
+      return 'Message cannot exceed 200 words. (Current: $wordCount)';
     }
 
     // Rate limit check
@@ -73,6 +140,7 @@ class ChatController {
       'initials': initials(name),
       'text': text.trim(),
       'timestamp': FieldValue.serverTimestamp(),
+      'reportedBy': <String>[],
     });
 
     _sentTimes.add(DateTime.now());
@@ -105,8 +173,40 @@ class ChatController {
     await _firestore.collection('messages').doc(messageId).delete();
   }
 
+  Future<String?> reportMessage(String messageId, String currentUid) async {
+    final docRef = _firestore.collection('messages').doc(messageId);
+
+    try {
+      final snap = await docRef.get();
+      if (!snap.exists) return 'Message not found.';
+
+      final data = snap.data() as Map<String, dynamic>;
+      final reportedBy = List<String>.from(data['reportedBy'] ?? []);
+
+      if (reportedBy.contains(currentUid)) {
+        return 'You have already reported this message.';
+      }
+
+      reportedBy.add(currentUid);
+
+      // Step 1: update reportedBy first (allowed by update rule)
+      await docRef.update({'reportedBy': reportedBy});
+
+      // Step 2: if 2+ reports now, delete (allowed by delete rule since resource already has 2+)
+      if (reportedBy.length >= 2) {
+        await docRef.delete();
+      }
+
+      return null;
+    } catch (e) {
+      return 'Failed to report message: $e';
+    }
+  }
+
   Future<void> signOut() async {
-    await _googleSignIn.signOut();
+    if (await _googleSignIn.isSignedIn()) {
+      await _googleSignIn.signOut();
+    }
     await _auth.signOut();
   }
 }

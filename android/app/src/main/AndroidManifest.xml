@@ -2,13 +2,13 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
 
-    <!-- Android 13+ (API 33+) এর জন্য -->
+    <!-- For Android 13+ (API 33+) -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"
         android:minSdkVersion="33"/>
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"
         android:minSdkVersion="33"/>
 
-    <!-- Android 12 এবং নিচের জন্য -->
+    For Android 12 and below -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
@@ -17,7 +17,7 @@
     <application
         android:label="ImagAI"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/launcher_icon"
         android:extractNativeLibs="true">
 
         <activity

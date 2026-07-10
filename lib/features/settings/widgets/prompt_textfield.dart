@@ -17,7 +17,7 @@ class PromptTextField extends StatelessWidget {
       maxLines: 5,
       style: const TextStyle(fontSize: 14, color: Colors.white, height: 1.5),
       decoration: const InputDecoration(
-        hintText: 'e.g. Ami student, amake Banglay bujhiye bolba.',
+        hintText: 'e.g. I'm a student, explain it to me simply.'
         hintStyle: TextStyle(color: Colors.white38, fontSize: 13),
         border: InputBorder.none,
         isDense: true,

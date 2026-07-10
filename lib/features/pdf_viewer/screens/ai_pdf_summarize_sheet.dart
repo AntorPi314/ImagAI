@@ -71,9 +71,9 @@ class _AiPdfSummarizeSheetState extends State<AiPdfSummarizeSheet> {
     final List<Map<String, dynamic>> parts = [
       {
         'text':
-            'এই PDF এর page গুলো দেখো এবং বাংলায় একটি সুন্দর summary দাও। '
-                'মূল বিষয়গুলো, গুরুত্বপূর্ণ তথ্য, এবং key points উল্লেখ করো। '
-                'Markdown formatting ব্যবহার করো।',
+            'Look at the pages of this PDF and provide a clear summary. '
+                'Mention the main topics, important information, and key points. '
+                'Use Markdown formatting.',
       },
     ];
 
@@ -421,7 +421,7 @@ class _AiPdfSummarizeSheetState extends State<AiPdfSummarizeSheet> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Text(
-                'আবার চেষ্টা করো',
+                'Try Again',
                 style: TextStyle(
                     color: Colors.white,
                     fontSize: 13,

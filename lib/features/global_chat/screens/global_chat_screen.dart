@@ -73,7 +73,9 @@ class _GlobalChatScreenState extends State<GlobalChatScreen> {
             content: Text(error),
             backgroundColor: Colors.redAccent,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
         );
       }
@@ -95,11 +97,17 @@ class _GlobalChatScreenState extends State<GlobalChatScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.white54),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Logout', style: TextStyle(color: AppColors.purple)),
+            child: const Text(
+              'Logout',
+              style: TextStyle(color: AppColors.purple),
+            ),
           ),
         ],
       ),
@@ -108,12 +116,19 @@ class _GlobalChatScreenState extends State<GlobalChatScreen> {
   }
 
   void _onTextChanged(String value) {
-    final words = value.trim().isEmpty ? 0 : value.trim().split(RegExp(r'\s+')).length;
+    final words = value.trim().isEmpty
+        ? 0
+        : value.trim().split(RegExp(r'\s+')).length;
     setState(() => _wordCount = words);
   }
 
-  Future<void> _showMessageOptions(BuildContext context, ChatMessageModel msg) async {
-    final isMe = msg.uid == _controller.currentUser?.uid;
+  Future<void> _showMessageOptions(
+    BuildContext context,
+    ChatMessageModel msg,
+  ) async {
+    final myUid = _controller.currentUser?.uid;
+    final isMe = msg.uid == myUid;
+    final alreadyReported = myUid != null && msg.reportedBy.contains(myUid);
 
     await showDialog(
       context: context,
@@ -125,8 +140,15 @@ class _GlobalChatScreenState extends State<GlobalChatScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.copy_rounded, color: AppColors.blue, size: 22),
-              title: const Text('Copy', style: TextStyle(color: Colors.white, fontSize: 15)),
+              leading: const Icon(
+                Icons.copy_rounded,
+                color: AppColors.blue,
+                size: 22,
+              ),
+              title: const Text(
+                'Copy',
+                style: TextStyle(color: Colors.white, fontSize: 15),
+              ),
               onTap: () {
                 Navigator.pop(context);
                 Clipboard.setData(ClipboardData(text: msg.text));
@@ -136,24 +158,121 @@ class _GlobalChatScreenState extends State<GlobalChatScreen> {
                     backgroundColor: AppColors.purple.withOpacity(0.9),
                     duration: const Duration(seconds: 1),
                     behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                 );
               },
             ),
             if (isMe)
               ListTile(
-                leading: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 22),
-                title: const Text('Delete', style: TextStyle(color: Colors.redAccent, fontSize: 15)),
+                leading: const Icon(
+                  Icons.delete_outline_rounded,
+                  color: Colors.redAccent,
+                  size: 22,
+                ),
+                title: const Text(
+                  'Delete',
+                  style: TextStyle(color: Colors.redAccent, fontSize: 15),
+                ),
                 onTap: () async {
                   Navigator.pop(context);
                   await _confirmDelete(msg);
                 },
+              )
+            else
+              ListTile(
+                leading: Icon(
+                  Icons.flag_outlined,
+                  color: alreadyReported ? Colors.white24 : Colors.orangeAccent,
+                  size: 22,
+                ),
+                title: Text(
+                  alreadyReported ? 'Reported' : 'Report',
+                  style: TextStyle(
+                    color: alreadyReported
+                        ? Colors.white24
+                        : Colors.orangeAccent,
+                    fontSize: 15,
+                  ),
+                ),
+                onTap: alreadyReported
+                    ? null
+                    : () async {
+                        Navigator.pop(context);
+                        await _confirmReport(msg);
+                      },
               ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _confirmReport(ChatMessageModel msg) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: AppColors.card,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: const Text(
+          'Report this message?',
+          style: TextStyle(color: Colors.white, fontSize: 16),
+        ),
+        content: const Text(
+          'If 2 different users report this message, it will be deleted automatically.',
+          style: TextStyle(color: Colors.white54, fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.white54),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text(
+              'Report',
+              style: TextStyle(color: Colors.orangeAccent),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      final myUid = _controller.currentUser?.uid;
+      if (myUid == null) return;
+      final error = await _controller.reportMessage(msg.id, myUid);
+      if (!mounted) return;
+      if (error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Reported successfully.'),
+            backgroundColor: AppColors.purple.withOpacity(0.9),
+            duration: const Duration(seconds: 1),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _confirmDelete(ChatMessageModel msg) async {
@@ -162,7 +281,10 @@ class _GlobalChatScreenState extends State<GlobalChatScreen> {
       builder: (_) => AlertDialog(
         backgroundColor: AppColors.card,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: const Text('Message Delete করবেন?', style: TextStyle(color: Colors.white, fontSize: 16)),
+        title: const Text(
+          'Delete this message?',
+          style: TextStyle(color: Colors.white, fontSize: 16),
+        ),
         content: const Text(
           'This message will be deleted forever.',
           style: TextStyle(color: Colors.white54, fontSize: 13),
@@ -170,11 +292,17 @@ class _GlobalChatScreenState extends State<GlobalChatScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.white54),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete', style: TextStyle(color: Colors.redAccent)),
+            child: const Text(
+              'Delete',
+              style: TextStyle(color: Colors.redAccent),
+            ),
           ),
         ],
       ),
@@ -230,7 +358,10 @@ class _GlobalChatScreenState extends State<GlobalChatScreen> {
 
                   return ListView.builder(
                     controller: _scrollCtrl,
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 8,
+                    ),
                     itemCount: msgs.length,
                     itemBuilder: (_, i) {
                       final msg = msgs[i];
@@ -262,8 +393,11 @@ class _GlobalChatScreenState extends State<GlobalChatScreen> {
                 color: Colors.white.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(Icons.arrow_back_ios_new_rounded,
-                  color: Colors.white70, size: 18),
+              child: const Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: Colors.white70,
+                size: 18,
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -284,22 +418,28 @@ class _GlobalChatScreenState extends State<GlobalChatScreen> {
             onLongPress: _signOut,
             child: Tooltip(
               message: 'Long press to logout',
-              child: Container(
-                width: 42,
-                height: 42,
-                decoration: const BoxDecoration(
-                  gradient: AppColors.primaryGradient,
-                  shape: BoxShape.circle,
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  initials,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 15,
-                  ),
-                ),
+              child: Builder(
+                builder: (_) {
+                  final bgColor = AppColors.avatarColorFor(name);
+                  final textColor = AppColors.avatarTextColorFor(bgColor);
+                  return Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: bgColor,
+                      shape: BoxShape.circle,
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      initials,
+                      style: TextStyle(
+                        color: textColor,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 15,
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
           ),
@@ -312,15 +452,20 @@ class _GlobalChatScreenState extends State<GlobalChatScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
       child: Row(
-        mainAxisAlignment:
-            isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: isMe
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          if (!isMe) ...[_avatarWidget(msg.initials), const SizedBox(width: 8)],
+          if (!isMe) ...[
+            _avatarWidget(msg.initials, msg.name),
+            const SizedBox(width: 8),
+          ],
           Flexible(
             child: Column(
-              crossAxisAlignment:
-                  isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              crossAxisAlignment: isMe
+                  ? CrossAxisAlignment.end
+                  : CrossAxisAlignment.start,
               children: [
                 if (!isMe)
                   Padding(
@@ -328,16 +473,19 @@ class _GlobalChatScreenState extends State<GlobalChatScreen> {
                     child: Text(
                       msg.name,
                       style: const TextStyle(
-                          color: Colors.white54,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600),
+                        color: Colors.white54,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 GestureDetector(
                   onLongPress: () => _showMessageOptions(context, msg),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 10),
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
                     decoration: BoxDecoration(
                       color: isMe ? AppColors.purple : AppColors.card,
                       borderRadius: BorderRadius.only(
@@ -353,83 +501,92 @@ class _GlobalChatScreenState extends State<GlobalChatScreen> {
               ],
             ),
           ),
-          if (isMe) ...[const SizedBox(width: 8), _avatarWidget(msg.initials)],
+          if (isMe) ...[
+            const SizedBox(width: 8),
+            _avatarWidget(msg.initials, msg.name),
+          ],
         ],
       ),
     );
   }
 
+  Widget _buildMessageText(String text, bool isMe) {
+    final urlRegex = RegExp(r'(https?://[^\s]+)', caseSensitive: false);
 
-Widget _buildMessageText(String text, bool isMe) {
-  final urlRegex = RegExp(
-    r'(https?://[^\s]+)',
-    caseSensitive: false,
-  );
+    final spans = <TextSpan>[];
+    int lastEnd = 0;
 
-  final spans = <TextSpan>[];
-  int lastEnd = 0;
+    for (final match in urlRegex.allMatches(text)) {
+      if (match.start > lastEnd) {
+        spans.add(
+          TextSpan(
+            text: text.substring(lastEnd, match.start),
+            style: const TextStyle(color: Colors.white, fontSize: 14),
+          ),
+        );
+      }
 
-  for (final match in urlRegex.allMatches(text)) {
-    if (match.start > lastEnd) {
-      spans.add(TextSpan(
-        text: text.substring(lastEnd, match.start),
+      final url = match.group(0)!;
+      spans.add(
+        TextSpan(
+          text: url,
+          style: TextStyle(
+            color: isMe ? Colors.white : AppColors.blue,
+            fontSize: 14,
+            decoration: TextDecoration.underline,
+            decorationColor: isMe ? Colors.white70 : AppColors.blue,
+          ),
+          recognizer: TapGestureRecognizer()..onTap = () => _launchUrl(url),
+        ),
+      );
+
+      lastEnd = match.end;
+    }
+
+    if (lastEnd < text.length) {
+      spans.add(
+        TextSpan(
+          text: text.substring(lastEnd),
+          style: const TextStyle(color: Colors.white, fontSize: 14),
+        ),
+      );
+    }
+
+    if (spans.isEmpty) {
+      return Text(
+        text,
         style: const TextStyle(color: Colors.white, fontSize: 14),
-      ));
+      );
     }
 
-    final url = match.group(0)!;
-    spans.add(TextSpan(
-      text: url,
-      style: TextStyle(
-        color: isMe ? Colors.white : AppColors.blue,
-        fontSize: 14,
-        decoration: TextDecoration.underline,
-        decorationColor: isMe ? Colors.white70 : AppColors.blue,
-      ),
-      recognizer: TapGestureRecognizer()
-        ..onTap = () => _launchUrl(url),
-    ));
-
-    lastEnd = match.end;
+    return RichText(text: TextSpan(children: spans));
   }
 
-  if (lastEnd < text.length) {
-    spans.add(TextSpan(
-      text: text.substring(lastEnd),
-      style: const TextStyle(color: Colors.white, fontSize: 14),
-    ));
+  Future<void> _launchUrl(String url) async {
+    // Opening via platform channel instead of url_launcher
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    } catch (_) {}
   }
 
-  if (spans.isEmpty) {
-    return Text(text, style: const TextStyle(color: Colors.white, fontSize: 14));
-  }
-
-  return RichText(text: TextSpan(children: spans));
-}
-
-Future<void> _launchUrl(String url) async {
-  // url_launcher ছাড়া platform channel দিয়ে open করা হচ্ছে
-  try {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
-  } catch (_) {}
-}
-
-  Widget _avatarWidget(String initials) {
+  Widget _avatarWidget(String initials, String name) {
+    final bgColor = AppColors.avatarColorFor(name);
+    final textColor = AppColors.avatarTextColorFor(bgColor);
     return Container(
       width: 32,
       height: 32,
-      decoration: const BoxDecoration(
-        gradient: AppColors.primaryGradient,
+      decoration: BoxDecoration(
+        color: bgColor,
         shape: BoxShape.circle,
       ),
       alignment: Alignment.center,
       child: Text(
         initials,
-        style: const TextStyle(
-          color: Colors.white,
+        style: TextStyle(
+          color: textColor,
           fontWeight: FontWeight.w900,
           fontSize: 11,
         ),
@@ -504,7 +661,9 @@ Future<void> _launchUrl(String url) async {
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
-                              color: Colors.white, strokeWidth: 2.5),
+                            color: Colors.white,
+                            strokeWidth: 2.5,
+                          ),
                         )
                       : Icon(
                           Icons.send_rounded,

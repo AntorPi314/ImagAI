@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 
@@ -9,11 +9,10 @@ import 'ai_base_service.dart';
 class GeminiService implements AiBaseService {
   @override
   Future<String> analyzeImage({
-    required File imageFile,
+    required Uint8List imageBytes,
     required String prompt,
     required SettingsModel settings,
   }) async {
-    final bytes = await imageFile.readAsBytes();
     final response = await http.post(
       Uri.parse(
         'https://generativelanguage.googleapis.com/v1beta/models/${settings.selectedModel}:generateContent?key=${settings.apiKey}',
@@ -32,7 +31,7 @@ class GeminiService implements AiBaseService {
               {
                 'inline_data': {
                   'mime_type': 'image/jpeg',
-                  'data': base64Encode(bytes),
+                  'data': base64Encode(imageBytes),
                 },
               },
             ],

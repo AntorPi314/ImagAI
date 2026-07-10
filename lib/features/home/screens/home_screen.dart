@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
@@ -34,6 +35,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
 Future<void> _loadHistory() async {
+  // History (with saved image files) is a native-only feature —
+  // Flutter Web has no local file system to persist images to.
+  if (kIsWeb) return;
+
   try {
     final history = await _controller.getHistory().timeout(
       const Duration(seconds: 6),
@@ -78,54 +83,56 @@ Future<void> _loadHistory() async {
                 ),
               ),
             ),
-            Container(
-              height: 200,
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                color: AppColors.card,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(30),
-                  topRight: Radius.circular(30),
+            // History section is native-only (see _loadHistory).
+            if (!kIsWeb)
+              Container(
+                height: 200,
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  color: AppColors.card,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(30),
+                    topRight: Radius.circular(30),
+                  ),
                 ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      AppStrings.historyTitle,
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    if (_history.isEmpty)
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       const Text(
-                        'No History Found.',
-                        style: TextStyle(color: Colors.white60),
-                      )
-                    else
-                      Expanded(
-                        child: ListView.separated(
-                          itemCount: _history.length,
-                          separatorBuilder: (context, index) =>
-                              const SizedBox(height: 8),
-                          itemBuilder: (context, index) {
-                            final item = _history[index];
-                            return HistoryListItem(
-                              history: item,
-                              onTap: () => _openHistoryItem(context, item),
-                            );
-                          },
+                        AppStrings.historyTitle,
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                  ],
+                      const SizedBox(height: 16),
+                      if (_history.isEmpty)
+                        const Text(
+                          'No History Found.',
+                          style: TextStyle(color: Colors.white60),
+                        )
+                      else
+                        Expanded(
+                          child: ListView.separated(
+                            itemCount: _history.length,
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(height: 8),
+                            itemBuilder: (context, index) {
+                              final item = _history[index];
+                              return HistoryListItem(
+                                history: item,
+                                onTap: () => _openHistoryItem(context, item),
+                              );
+                            },
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ),
-            ),
           ],
         ),
       ),
@@ -173,7 +180,9 @@ Future<void> _onFeatureTap(BuildContext context, FeatureItem feature) async {
 }
 
 Future<void> _pickImageForCompression(BuildContext context) async {
-  final File? imageFile = await ImagePickerUtil.pickImage(ImageSource.gallery);
+  // Image Compression uses ffmpeg + dart:io File and stays native-only —
+  // it is not part of the Web-compatible tools.
+  final File? imageFile = await _pickImageFileForCompression();
   if (imageFile == null || !context.mounted) return;
 
   await Navigator.pushNamed(
@@ -181,6 +190,13 @@ Future<void> _pickImageForCompression(BuildContext context) async {
     AppRouter.imageCompression,
     arguments: ImageCompressionArgs(imageFile: imageFile),
   );
+}
+
+Future<File?> _pickImageFileForCompression() async {
+  final picker = ImagePicker();
+  final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+  if (pickedFile == null) return null;
+  return File(pickedFile.path);
 }
 
 Future<void> _pickVideoForCompression(BuildContext context) async {
@@ -206,15 +222,18 @@ Future<void> _pickVideoForCompression(BuildContext context) async {
         return SafeArea(
           child: Wrap(
             children: [
-              ListTile(
-                leading: const Icon(Icons.camera_alt, color: Colors.white),
-                title: const Text(
-                  'Take a photo',
-                  style: TextStyle(color: Colors.white),
+              // Camera capture isn't available on Web through image_picker
+              // in the same way, so only show it on native platforms.
+              if (!kIsWeb)
+                ListTile(
+                  leading: const Icon(Icons.camera_alt, color: Colors.white),
+                  title: const Text(
+                    'Take a photo',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  onTap: () =>
+                      _pickAndNavigate(context, feature, ImageSource.camera),
                 ),
-                onTap: () =>
-                    _pickAndNavigate(context, feature, ImageSource.camera),
-              ),
               ListTile(
                 leading: const Icon(Icons.photo_library, color: Colors.white),
                 title: const Text(
@@ -236,8 +255,8 @@ Future<void> _pickVideoForCompression(BuildContext context) async {
     FeatureItem feature,
     ImageSource source,
   ) async {
-    final File? imageFile = await ImagePickerUtil.pickImage(source);
-    if (imageFile == null || !context.mounted) {
+    final PickedImage? picked = await ImagePickerUtil.pickImage(source);
+    if (picked == null || !context.mounted) {
       return;
     }
 
@@ -248,7 +267,8 @@ Future<void> _pickVideoForCompression(BuildContext context) async {
       arguments: AiToolRouteArgs(
         title: feature.title,
         prompt: _controller.promptForTitle(feature.title),
-        imageFile: imageFile,
+        imageBytes: picked.bytes,
+        imageName: picked.name,
       ),
     );
     await _loadHistory();
@@ -258,6 +278,7 @@ Future<void> _pickVideoForCompression(BuildContext context) async {
     BuildContext context,
     HistoryModel history,
   ) async {
+    // History (and its saved image file) is native-only — see _loadHistory.
     final imageFile = File(history.imagePath);
     if (!imageFile.existsSync()) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -266,13 +287,16 @@ Future<void> _pickVideoForCompression(BuildContext context) async {
       return;
     }
 
+    final bytes = await imageFile.readAsBytes();
+
     await Navigator.pushNamed(
       context,
       AppRouter.aiToolResult,
       arguments: AiToolRouteArgs(
         title: history.title,
         prompt: history.prompt,
-        imageFile: imageFile,
+        imageBytes: bytes,
+        imageName: history.fileName,
         resultText: history.resultText,
       ),
     );
@@ -335,4 +359,3 @@ class _HeaderSection extends StatelessWidget {
     );
   }
 }
-
