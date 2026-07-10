@@ -221,7 +221,7 @@ class _GlobalChatScreenState extends State<GlobalChatScreen> {
           style: TextStyle(color: Colors.white, fontSize: 16),
         ),
         content: const Text(
-          'If 2 different users report this message, it will be deleted automatically.',
+          'You can report a message only once.',
           style: TextStyle(color: Colors.white54, fontSize: 13),
         ),
         actions: [
@@ -415,32 +415,29 @@ class _GlobalChatScreenState extends State<GlobalChatScreen> {
             ),
           ),
           GestureDetector(
-            onLongPress: _signOut,
-            child: Tooltip(
-              message: 'Long press to logout',
-              child: Builder(
-                builder: (_) {
-                  final bgColor = AppColors.avatarColorFor(name);
-                  final textColor = AppColors.avatarTextColorFor(bgColor);
-                  return Container(
-                    width: 42,
-                    height: 42,
-                    decoration: BoxDecoration(
-                      color: bgColor,
-                      shape: BoxShape.circle,
+            onTap: _signOut,
+            child: Builder(
+              builder: (_) {
+                final bgColor = AppColors.avatarColorFor(name);
+                final textColor = AppColors.avatarTextColorFor(bgColor);
+                return Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: bgColor,
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    initials,
+                    style: TextStyle(
+                      color: textColor,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 15,
                     ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      initials,
-                      style: TextStyle(
-                        color: textColor,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 15,
-                      ),
-                    ),
-                  );
-                },
-              ),
+                  ),
+                );
+              },
             ),
           ),
         ],
@@ -578,10 +575,7 @@ class _GlobalChatScreenState extends State<GlobalChatScreen> {
     return Container(
       width: 32,
       height: 32,
-      decoration: BoxDecoration(
-        color: bgColor,
-        shape: BoxShape.circle,
-      ),
+      decoration: BoxDecoration(color: bgColor, shape: BoxShape.circle),
       alignment: Alignment.center,
       child: Text(
         initials,
