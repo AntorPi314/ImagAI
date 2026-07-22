@@ -10,6 +10,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/routing/app_router.dart';
 import '../../../core/utils/image_picker_util.dart';
+import '../../../database/local_db_service.dart';
 import '../../../database/models/history_model.dart';
 import '../controllers/home_controller.dart';
 import '../widgets/history_list_item.dart';
@@ -26,6 +27,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   static const HomeController _controller = HomeController();
+  final LocalDbService _localDbService = LocalDbService();
   List<HistoryModel> _history = const [];
 
   @override
@@ -125,6 +127,8 @@ Future<void> _loadHistory() async {
                               return HistoryListItem(
                                 history: item,
                                 onTap: () => _openHistoryItem(context, item),
+                                onLongPress: () =>
+                                    _confirmDeleteHistoryItem(context, item),
                               );
                             },
                           ),
@@ -280,9 +284,9 @@ Future<void> _pickVideoForCompression(BuildContext context) async {
   ) async {
     // History (and its saved image file) is native-only — see _loadHistory.
     final imageFile = File(history.imagePath);
-    if (!imageFile.existsSync()) {
+    if (history.imagePath.trim().isEmpty || !imageFile.existsSync()) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Image file ar paoa jacche na.')),
+        const SnackBar(content: Text('Image file not found.')),
       );
       return;
     }
@@ -298,6 +302,60 @@ Future<void> _pickVideoForCompression(BuildContext context) async {
         imageBytes: bytes,
         imageName: history.fileName,
         resultText: history.resultText,
+      ),
+    );
+  }
+
+  Future<void> _confirmDeleteHistoryItem(
+    BuildContext context,
+    HistoryModel history,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: AppColors.card,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: const Text(
+            'Delete history?',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          content: Text(
+            'This history item will be permanently deleted: "${history.fileName}"',
+            style: const TextStyle(color: Colors.white70),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Colors.white60),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text(
+                'Delete',
+                style: TextStyle(color: Colors.redAccent),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true || !context.mounted) return;
+
+    await _localDbService.deleteHistoryItem(history.id);
+    await _loadHistory();
+
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('History deleted.'),
+        duration: Duration(seconds: 1),
       ),
     );
   }

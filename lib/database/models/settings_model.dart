@@ -9,6 +9,11 @@ class SettingsModel {
   final int maxOutputTokens;
   final String systemPrompt;
 
+  /// Models fetched live from the Gemini API via Settings > Load Models.
+  /// Empty until the user loads them at least once; falls back to
+  /// [ApiConstants.geminiModels] when empty.
+  final List<String> geminiLoadedModels;
+
   const SettingsModel({
     this.selectedProvider = AIProvider.gemini,
     this.apiKey = '',
@@ -17,6 +22,7 @@ class SettingsModel {
     this.temperatureMax = 1.0,
     this.maxOutputTokens = 8192,
     this.systemPrompt = '',
+    this.geminiLoadedModels = const [],
   });
 
   SettingsModel copyWith({
@@ -27,6 +33,7 @@ class SettingsModel {
     double? temperatureMax,
     int? maxOutputTokens,
     String? systemPrompt,
+    List<String>? geminiLoadedModels,
   }) {
     return SettingsModel(
       selectedProvider: selectedProvider ?? this.selectedProvider,
@@ -36,6 +43,7 @@ class SettingsModel {
       temperatureMax: temperatureMax ?? this.temperatureMax,
       maxOutputTokens: maxOutputTokens ?? this.maxOutputTokens,
       systemPrompt: systemPrompt ?? this.systemPrompt,
+      geminiLoadedModels: geminiLoadedModels ?? this.geminiLoadedModels,
     );
   }
 }

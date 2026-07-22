@@ -6,10 +6,16 @@ import '../../../core/constants/app_colors.dart';
 import '../../../database/models/history_model.dart';
 
 class HistoryListItem extends StatelessWidget {
-  const HistoryListItem({super.key, required this.history, this.onTap});
+  const HistoryListItem({
+    super.key,
+    required this.history,
+    this.onTap,
+    this.onLongPress,
+  });
 
   final HistoryModel history;
   final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
 
   @override
   Widget build(BuildContext context) {
@@ -17,6 +23,7 @@ class HistoryListItem extends StatelessWidget {
 
     return GestureDetector(
       onTap: onTap,
+      onLongPress: onLongPress,
       child: Container(
         height: 80,
         padding: const EdgeInsets.all(10),
