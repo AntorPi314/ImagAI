@@ -1,5 +1,9 @@
+<<<<<<< HEAD
 import 'dart:io';
 
+=======
+import 'package:flutter/foundation.dart' show kIsWeb;
+>>>>>>> 84cfff6a3ff9761f081cd05251d4df3c8386f8b2
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -63,7 +67,11 @@ class _AiToolResultScreenState extends State<AiToolResultScreen>
       final settings = await _localDbService.loadSettings();
       if (settings.apiKey.trim().isEmpty) {
         setState(() {
+<<<<<<< HEAD
           _resultText = '❌ ${AppStrings.missingApiKey}';
+=======
+          _resultText = ' ${AppStrings.missingApiKey}';
+>>>>>>> 84cfff6a3ff9761f081cd05251d4df3c8386f8b2
           _isLoading = false;
         });
         _spinController.stop();
@@ -72,11 +80,16 @@ class _AiToolResultScreenState extends State<AiToolResultScreen>
 
       final service = _resolveService(settings);
       final result = await service.analyzeImage(
+<<<<<<< HEAD
         imageFile: widget.args.imageFile,
+=======
+        imageBytes: widget.args.imageBytes,
+>>>>>>> 84cfff6a3ff9761f081cd05251d4df3c8386f8b2
         prompt: widget.args.prompt ?? '',
         settings: settings,
       );
 
+<<<<<<< HEAD
       await _localDbService.addHistoryItem(
         HistoryModel(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -88,6 +101,24 @@ class _AiToolResultScreenState extends State<AiToolResultScreen>
           sizeLabel: _fileSizeLabel(widget.args.imageFile),
         ),
       );
+=======
+      // History is only kept on native platforms (Android/iOS/Desktop).
+      // On Web there is no local file path to persist, and history
+      // support isn't needed there.
+      if (!kIsWeb) {
+        await _localDbService.addHistoryItem(
+          HistoryModel(
+            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            title: widget.args.title,
+            prompt: widget.args.prompt ?? '',
+            resultText: result,
+            imagePath: '',
+            fileName: widget.args.imageName,
+            sizeLabel: _fileSizeLabel(widget.args.imageBytes.length),
+          ),
+        );
+      }
+>>>>>>> 84cfff6a3ff9761f081cd05251d4df3c8386f8b2
 
       setState(() {
         _resultText = result;
@@ -103,6 +134,7 @@ class _AiToolResultScreenState extends State<AiToolResultScreen>
     _spinController.reset();
   }
 
+<<<<<<< HEAD
   String _fileNameFromPath(String path) {
     if (path.isEmpty) return 'image';
     return path.split(Platform.pathSeparator).last;
@@ -110,6 +142,9 @@ class _AiToolResultScreenState extends State<AiToolResultScreen>
 
   String _fileSizeLabel(File file) {
     final bytes = file.lengthSync();
+=======
+  String _fileSizeLabel(int bytes) {
+>>>>>>> 84cfff6a3ff9761f081cd05251d4df3c8386f8b2
     if (bytes < 1024 * 1024) {
       return '${(bytes / 1024).toStringAsFixed(1)} KB';
     }
@@ -295,8 +330,15 @@ class _AiToolResultScreenState extends State<AiToolResultScreen>
           borderRadius: BorderRadius.circular(14),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxHeight: 220),
+<<<<<<< HEAD
             child: Image.file(
               widget.args.imageFile,
+=======
+            // Image.memory works on every platform including Web,
+            // unlike Image.file which is not supported on Flutter Web.
+            child: Image.memory(
+              widget.args.imageBytes,
+>>>>>>> 84cfff6a3ff9761f081cd05251d4df3c8386f8b2
               width: double.infinity,
               fit: BoxFit.cover,
             ),

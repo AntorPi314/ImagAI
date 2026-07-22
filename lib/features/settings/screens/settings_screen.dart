@@ -32,17 +32,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _load();
   }
 
+<<<<<<< HEAD
   Future<void> _load() async {
     final settings = await _controller.loadSettings();
     _apiKeyController.text = settings.apiKey;
     _systemPromptController.text = settings.systemPrompt;
     _maxTokensController.text = settings.maxOutputTokens.toString();
 
+=======
+Future<void> _load() async {
+  try {
+    final settings = await _controller.loadSettings();
+    if (!mounted) return;
+    _apiKeyController.text = settings.apiKey;
+    _systemPromptController.text = settings.systemPrompt;
+    _maxTokensController.text = settings.maxOutputTokens.toString();
+>>>>>>> 84cfff6a3ff9761f081cd05251d4df3c8386f8b2
     setState(() {
       _settings = settings;
       _isLoading = false;
     });
+<<<<<<< HEAD
   }
+=======
+  } catch (_) {
+    if (!mounted) return;
+    setState(() => _isLoading = false); // spinner stops even on error
+  }
+}
+>>>>>>> 84cfff6a3ff9761f081cd05251d4df3c8386f8b2
 
   @override
   void dispose() {
@@ -63,7 +81,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     ScaffoldMessenger.of(
       context,
+<<<<<<< HEAD
     ).showSnackBar(const SnackBar(content: Text('Settings Saved ✅')));
+=======
+    ).showSnackBar(const SnackBar(content: Text('Settings Saved ')));
+>>>>>>> 84cfff6a3ff9761f081cd05251d4df3c8386f8b2
   }
 
   @override
