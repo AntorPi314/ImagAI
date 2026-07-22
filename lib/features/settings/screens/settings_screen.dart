@@ -25,6 +25,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   SettingsModel _settings = const SettingsModel();
   bool _apiKeyVisible = false;
   bool _isLoading = true;
+  bool _isLoadingModels = false;
 
   @override
   void initState() {
@@ -32,14 +33,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _load();
   }
 
-<<<<<<< HEAD
-  Future<void> _load() async {
-    final settings = await _controller.loadSettings();
-    _apiKeyController.text = settings.apiKey;
-    _systemPromptController.text = settings.systemPrompt;
-    _maxTokensController.text = settings.maxOutputTokens.toString();
-
-=======
 Future<void> _load() async {
   try {
     final settings = await _controller.loadSettings();
@@ -47,20 +40,15 @@ Future<void> _load() async {
     _apiKeyController.text = settings.apiKey;
     _systemPromptController.text = settings.systemPrompt;
     _maxTokensController.text = settings.maxOutputTokens.toString();
->>>>>>> 84cfff6a3ff9761f081cd05251d4df3c8386f8b2
     setState(() {
       _settings = settings;
       _isLoading = false;
     });
-<<<<<<< HEAD
-  }
-=======
   } catch (_) {
     if (!mounted) return;
     setState(() => _isLoading = false); // spinner stops even on error
   }
 }
->>>>>>> 84cfff6a3ff9761f081cd05251d4df3c8386f8b2
 
   @override
   void dispose() {
@@ -70,8 +58,16 @@ Future<void> _load() async {
     super.dispose();
   }
 
-  List<String> get _currentModels =>
-      ApiConstants.modelOptions[_settings.selectedProvider]!;
+  /// Models to show in the dropdown for the currently selected provider.
+  /// For Gemini, prefers the live list loaded via "Load Models"; falls back
+  /// to the static default list until the user loads models at least once.
+  List<String> get _currentModels {
+    if (_settings.selectedProvider == AIProvider.gemini &&
+        _settings.geminiLoadedModels.isNotEmpty) {
+      return _settings.geminiLoadedModels;
+    }
+    return ApiConstants.modelOptions[_settings.selectedProvider]!;
+  }
 
   Future<void> _save() async {
     await _controller.saveSettings(_settings);
@@ -81,11 +77,43 @@ Future<void> _load() async {
 
     ScaffoldMessenger.of(
       context,
-<<<<<<< HEAD
-    ).showSnackBar(const SnackBar(content: Text('Settings Saved ✅')));
-=======
     ).showSnackBar(const SnackBar(content: Text('Settings Saved ')));
->>>>>>> 84cfff6a3ff9761f081cd05251d4df3c8386f8b2
+  }
+
+  Future<void> _loadModels() async {
+    final apiKey = _apiKeyController.text.trim();
+
+    if (apiKey.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Enter your API key first')),
+      );
+      return;
+    }
+
+    setState(() => _isLoadingModels = true);
+
+    try {
+      final updated = await _controller.loadModelsFromApi(
+        _settings.copyWith(apiKey: apiKey),
+        apiKey: apiKey,
+      );
+      if (!mounted) return;
+      setState(() {
+        _settings = updated;
+        _isLoadingModels = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Loaded ${updated.geminiLoadedModels.length} models'),
+        ),
+      );
+    } catch (err) {
+      if (!mounted) return;
+      setState(() => _isLoadingModels = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(err.toString().replaceFirst('Exception: ', ''))),
+      );
+    }
   }
 
   @override
@@ -252,7 +280,47 @@ Future<void> _load() async {
             ],
           ),
         ),
+        // "Load Models" is only meaningful for Gemini right now, since
+        // GeminiService is the only service exposing a models-list endpoint.
+        if (_settings.selectedProvider == AIProvider.gemini) ...[
+          const SizedBox(height: 10),
+          _buildLoadModelsButton(),
+        ],
       ],
+    );
+  }
+
+  Widget _buildLoadModelsButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: _isLoadingModels ? null : _loadModels,
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(color: AppColors.purple),
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+        ),
+        icon: _isLoadingModels
+            ? const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppColors.purple,
+                ),
+              )
+            : const Icon(Icons.refresh, color: AppColors.purple, size: 18),
+        label: Text(
+          _isLoadingModels ? 'Loading...' : 'Load Models',
+          style: const TextStyle(
+            color: AppColors.purple,
+            fontWeight: FontWeight.w700,
+            fontSize: 13,
+          ),
+        ),
+      ),
     );
   }
 
