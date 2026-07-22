@@ -29,23 +29,13 @@ class _PdfViewerScreenState extends State<PdfViewerScreen>
 
   late final AnimationController _aiSpinController;
 
-<<<<<<< HEAD
-  @override
-=======
 @override
->>>>>>> 84cfff6a3ff9761f081cd05251d4df3c8386f8b2
   void initState() {
     super.initState();
     _aiSpinController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 900),
     );
-<<<<<<< HEAD
-
-    _pdfController = PdfControllerPinch(
-      document: PdfDocument.openFile(widget.pdfFile.path),
-    );
-=======
     try {
       _pdfController = PdfControllerPinch(
         document: PdfDocument.openFile(widget.pdfFile.path),
@@ -53,7 +43,6 @@ class _PdfViewerScreenState extends State<PdfViewerScreen>
     } catch (_) {
       // PDF load error handled by errorBuilder in PdfViewPinch
     }
->>>>>>> 84cfff6a3ff9761f081cd05251d4df3c8386f8b2
   }
 
   @override
@@ -86,11 +75,7 @@ class _PdfViewerScreenState extends State<PdfViewerScreen>
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-<<<<<<< HEAD
-              content: const Text('⚠️ Settings-এ আগে API Key দিন।'),
-=======
               content: const Text('Please add your API Key in Settings first.'),
->>>>>>> 84cfff6a3ff9761f081cd05251d4df3c8386f8b2
               backgroundColor: AppColors.purple.withValues(alpha: 0.9),
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
@@ -212,11 +197,7 @@ class _PdfViewerScreenState extends State<PdfViewerScreen>
                                 color: Colors.redAccent, size: 48),
                             const SizedBox(height: 12),
                             Text(
-<<<<<<< HEAD
-                              'PDF load করা যাচ্ছে না।\n$error',
-=======
                               'Unable to load PDF.\n$error',
->>>>>>> 84cfff6a3ff9761f081cd05251d4df3c8386f8b2
                               textAlign: TextAlign.center,
                               style: const TextStyle(
                                   color: Colors.white60, fontSize: 13),

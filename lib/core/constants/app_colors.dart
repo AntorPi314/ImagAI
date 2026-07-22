@@ -13,8 +13,6 @@ class AppColors {
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,
   );
-<<<<<<< HEAD
-=======
 
   // ── Name-based unique avatar colors ──────────────────────────────
   // A curated palette that looks good (saturated but easy on the eyes)
@@ -67,5 +65,4 @@ class AppColors {
         ? const Color(0xFF1A1A1A)
         : Colors.white;
   }
->>>>>>> 84cfff6a3ff9761f081cd05251d4df3c8386f8b2
 }

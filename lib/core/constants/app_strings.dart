@@ -5,5 +5,5 @@ class AppStrings {
   static const String saveSettings = 'Save Settings';
   static const String missingApiKey = 'No API Key Found';
   static const String unsupportedProvider =
-      'Provider ti akhon support kora hoyni.';
+      'This provider is not currently supported.';
 }

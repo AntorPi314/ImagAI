@@ -2,7 +2,11 @@ enum AIProvider { gemini, deepseek }
 
 class ApiConstants {
   static const String defaultGeminiModel = 'gemini-2.5-flash';
+
+  /// Fallback list shown before the user loads live models from the API
+  /// (Settings > Load Models). Once loaded, the live list is used instead.
   static const List<String> geminiModels = [defaultGeminiModel];
+
   static const List<String> deepseekModels = [
     'deepseek-chat',
     'deepseek-reasoner',
