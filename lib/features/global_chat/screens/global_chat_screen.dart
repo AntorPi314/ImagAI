@@ -42,10 +42,27 @@ class _GlobalChatScreenState extends State<GlobalChatScreen> {
   final _controller = ChatController();
   final _textCtrl = TextEditingController();
   final _scrollCtrl = ScrollController();
+  final _focusNode = FocusNode();
   bool _sending = false;
   int _prevMsgCount = 0;
   int _wordCount = 0;
   static const int _maxWords = 200;
+
+  // Cached once so typing (setState via _onTextChanged) doesn't create a
+  // brand-new Firestore stream subscription on every keystroke, which was
+  // causing the message list to flicker/reload while typing.
+  late final Stream<List<ChatMessageModel>> _messagesStream =
+      _controller.messagesStream();
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode.addListener(() {
+      if (_focusNode.hasFocus) {
+        _scrollToBottom();
+      }
+    });
+  }
 
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -221,7 +238,7 @@ class _GlobalChatScreenState extends State<GlobalChatScreen> {
           style: TextStyle(color: Colors.white, fontSize: 16),
         ),
         content: const Text(
-          'You can report a message only once.',
+          'Reporting a message will notify the moderators. It may be automatically deleted.',
           style: TextStyle(color: Colors.white54, fontSize: 13),
         ),
         actions: [
@@ -316,6 +333,7 @@ class _GlobalChatScreenState extends State<GlobalChatScreen> {
   void dispose() {
     _textCtrl.dispose();
     _scrollCtrl.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -333,7 +351,7 @@ class _GlobalChatScreenState extends State<GlobalChatScreen> {
             _buildAppBar(name, myInitials),
             Expanded(
               child: StreamBuilder<List<ChatMessageModel>>(
-                stream: _controller.messagesStream(),
+                stream: _messagesStream,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(
@@ -575,7 +593,10 @@ class _GlobalChatScreenState extends State<GlobalChatScreen> {
     return Container(
       width: 32,
       height: 32,
-      decoration: BoxDecoration(color: bgColor, shape: BoxShape.circle),
+      decoration: BoxDecoration(
+        color: bgColor,
+        shape: BoxShape.circle,
+      ),
       alignment: Alignment.center,
       child: Text(
         initials,
@@ -623,6 +644,7 @@ class _GlobalChatScreenState extends State<GlobalChatScreen> {
                   ),
                   child: TextField(
                     controller: _textCtrl,
+                    focusNode: _focusNode,
                     style: const TextStyle(color: Colors.white),
                     maxLines: null,
                     textInputAction: TextInputAction.send,
