@@ -1,5 +1,16 @@
 # ImagAI
 
+<<<<<<< HEAD
+## Figma Design
+
+https://www.figma.com/design/mHx0AGdxmoBz3GMgWXyRNT/Mobile-App-Development--ImagAI-?node-id=0-1&t=92ZxLOs1LDNqvRqa-1
+
+
+## App Screenshots
+
+![screenshot](https://github.com/AntorPi314/ImagAI/blob/main/screenshot/ImagAI.png)
+
+=======
 An AI-powered image processing app built with Flutter. ImagAI lets users analyze images and PDFs using AI models such as Gemini and DeepSeek, compress images and videos, and chat with other users in a global chat room.
 
 
@@ -139,3 +150,4 @@ https://www.figma.com/design/mHx0AGdxmoBz3GMgWXyRNT/Mobile-App-Development--Imag
 This project is licensed under the MIT License. You are free to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of this software, provided the original copyright notice and this permission notice are included in all copies or substantial portions of the software.
 
 See the [LICENSE](LICENSE) file for the full license text.
+>>>>>>> 84cfff6a3ff9761f081cd05251d4df3c8386f8b2
