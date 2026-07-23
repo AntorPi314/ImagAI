@@ -77,16 +77,25 @@ class _AiToolResultScreenState extends State<AiToolResultScreen>
       );
 
       // History is only kept on native platforms (Android/iOS/Desktop).
-      // On Web there is no local file path to persist, and history
-      // support isn't needed there.
+      // On Web there is no local file system to persist images to, and
+      // history support isn't needed there.
       if (!kIsWeb) {
+        final id = DateTime.now().millisecondsSinceEpoch.toString();
+
+        // Persist the image bytes to a permanent app file so the history
+        // list (and re-opening a history item) can actually show it later.
+        final savedImagePath = await _localDbService.saveHistoryImage(
+          widget.args.imageBytes,
+          id,
+        );
+
         await _localDbService.addHistoryItem(
           HistoryModel(
-            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            id: id,
             title: widget.args.title,
             prompt: widget.args.prompt ?? '',
             resultText: result,
-            imagePath: '',
+            imagePath: savedImagePath,
             fileName: widget.args.imageName,
             sizeLabel: _fileSizeLabel(widget.args.imageBytes.length),
           ),
@@ -272,9 +281,16 @@ class _AiToolResultScreenState extends State<AiToolResultScreen>
   }
 
   // ─── Image Card ───────────────────────────────────────────────
+  // Shows the full image without cropping. The card itself has a max
+  // height, and if the image is taller than that (once scaled to the
+  // card's width) it becomes vertically scrollable so the user can pan
+  // through and see every part of the image instead of it being cut off
+  // by BoxFit.cover.
   Widget _buildImageCard() {
     return Center(
       child: Container(
+        width: double.infinity,
+        constraints: const BoxConstraints(maxHeight: 320),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
@@ -291,14 +307,14 @@ class _AiToolResultScreenState extends State<AiToolResultScreen>
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(14),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxHeight: 220),
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
             // Image.memory works on every platform including Web,
             // unlike Image.file which is not supported on Flutter Web.
             child: Image.memory(
               widget.args.imageBytes,
               width: double.infinity,
-              fit: BoxFit.cover,
+              fit: BoxFit.fitWidth,
             ),
           ),
         ),

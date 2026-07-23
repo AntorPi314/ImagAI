@@ -54,4 +54,48 @@ class GeminiService implements AiBaseService {
         candidates?.firstOrNull?['content']?['parts'] as List<dynamic>?;
     return (parts?.firstOrNull?['text'] as String?) ?? 'No response';
   }
+
+  /// Fetches the list of Gemini models available for the given API key
+  /// that support `generateContent`, sorted alphabetically.
+  ///
+  /// Throws an [Exception] with a human readable message on failure.
+  Future<List<String>> listModels({required String apiKey}) async {
+    if (apiKey.trim().isEmpty) {
+      throw Exception('Enter an API key first.');
+    }
+
+    final response = await http.get(
+      Uri.parse(
+        'https://generativelanguage.googleapis.com/v1beta/models?key=$apiKey',
+      ),
+    );
+
+    final data = jsonDecode(response.body) as Map<String, dynamic>;
+
+    if (response.statusCode >= 400) {
+      throw Exception(
+        data['error']?['message'] as String? ?? 'Failed to load models.',
+      );
+    }
+
+    final models = (data['models'] as List<dynamic>? ?? [])
+        .cast<Map<String, dynamic>>()
+        .where((model) {
+          final methods =
+              (model['supportedGenerationMethods'] as List<dynamic>?)
+                  ?.cast<String>() ??
+              const [];
+          return methods.contains('generateContent');
+        })
+        .map((model) => (model['name'] as String).replaceFirst('models/', ''))
+        .toList();
+
+    models.sort();
+
+    if (models.isEmpty) {
+      throw Exception('No compatible models found for this API key.');
+    }
+
+    return models;
+  }
 }
